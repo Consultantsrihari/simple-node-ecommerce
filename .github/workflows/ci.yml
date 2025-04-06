@@ -1,0 +1,54 @@
+# Simple GitHub Actions CI for Node.js
+
+name: Node.js CI
+
+on:
+  push:
+    branches: [ main ] # Or your default branch
+  pull_request:
+    branches: [ main ] # Or your default branch
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [16.x, 18.x] # Test on multiple Node versions
+        # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
+
+    steps:
+    - uses: actions/checkout@v3 # Checks-out your repository under $GITHUB_WORKSPACE
+
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm' # Cache npm dependencies
+
+    - name: Install dependencies
+      run: npm ci # Use 'ci' for cleaner installs in CI environments
+
+    # Add steps for linting, testing, building etc. below
+    # Example: Linting (requires eslint setup)
+    # - name: Run linter
+    #   run: npm run lint
+
+    # Example: Running tests (requires test script in package.json)
+    # - name: Run tests
+    #   run: npm test
+
+    # Example: Build step (if you have one)
+    # - name: Build project
+    #   run: npm run build --if-present
+
+    # Basic check: Ensure the app can potentially start (doesn't check runtime errors)
+    - name: Check if app potentially starts
+      run: node app.js --version # A simple command, replace with a better check if possible
+      env:
+        # Provide dummy env vars for CI check if needed, avoid real secrets
+        MONGODB_URI: mongodb://localhost:27017/test_shop
+        SESSION_SECRET: dummy_secret_for_ci
+        PORT: 3001 # Use a different port if needed
+      # Note: This step won't actually connect to a DB unless you set one up in CI

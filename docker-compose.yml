@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    ports:
+      - "3000:3000" # Map host port 3000 to container port 3000
+    volumes:
+      - .:/usr/src/app # Mount current directory to container's working directory
+      - /usr/src/app/node_modules # Use an anonymous volume to prevent local node_modules overwriting container's
+    env_file:
+      - .env # Load environment variables from .env file
+    environment:
+      # Ensure MONGODB_URI points to the mongo service within the Docker network
+      MONGODB_URI: mongodb://mongo:27017/shop
+      PORT: 3000
+    depends_on:
+      - mongo # Make sure mongo starts before the app
+    command: npm run dev # Use nodemon for development, change to "npm start" for production
+
+  mongo:
+    image: mongo:latest # Use the official MongoDB image
+    ports:
+      - "27017:27017" # Optional: Map host port 27017 to container port 27017 for direct access
+    volumes:
+      - mongo-data:/data/db # Persist MongoDB data using a named volume
+
+volumes:
+  mongo-data: # Define the named volume for MongoDB data
